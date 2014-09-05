@@ -120,9 +120,35 @@ sigmav2(2)
 #ans 2046
 
 ##### question 18 solve the series without a loop #####
+
 q18 <- c(1:10)
 sum(2^q18)
 
-##### question 19 
-q19 <- c(20:50, 5)
-c
+##### question 19 vector 20 to 50 by 5 #####
+
+q19 <- head(matrix(c(20:54), nrow=5),1)
+
+##### question 20  vector with example ten times #####
+
+repeating_char_vector <- function(word,times){
+  x <- word
+  y <- c(word)
+  end <- times-1
+  for (i in 1:end){
+    y <- c(y,x) 
+  }
+  print(y)
+}
+repeating_char_vector("example",10)
+
+##### question 21 quadratic equation solver #####
+
+quadratic_solver <- function(a,b,c){
+   
+  x=(sqrt((4*a*c)+b^2)-b) /(2*a)
+  print(x)
+}
+
+quadratic_solver(1,4,2)
+
+
