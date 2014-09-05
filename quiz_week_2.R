@@ -81,7 +81,7 @@ interest(1500,0.0324,6)
 
 q15 <- c(1:19)
 
-vectorsum <- function(v) {
+vectorsum <- function(v){
   i <- 1
   b<-0
   while (i <= length(v)){
@@ -93,4 +93,36 @@ vectorsum <- function(v) {
 
 vectorsum(q15)
 
-##### question 16 
+##### question 16 Use a for loop to calculate ∑ #####
+sigma <- function(base){
+  x <- 0
+  for (i in 1:10){
+    x <- x + (base^i)
+  }
+  print(x)
+}
+sigma(2)
+
+#ans 2046
+
+##### question 17 use while for 16 #####
+
+sigmav2 <- function(base){
+  i <- 1
+  x <- 0
+  while (i <= 10) {
+    x <- x + (base^i)
+    i <- i+1
+  }
+  print(x)
+}
+sigmav2(2)
+#ans 2046
+
+##### question 18 solve the series without a loop #####
+q18 <- c(1:10)
+sum(2^q18)
+
+##### question 19 
+q19 <- c(20:50, 5)
+c
