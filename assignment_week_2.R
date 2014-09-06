@@ -45,7 +45,7 @@ quadratic_solver <- function(a,b,c){
  } 
   else if (delta == 0) {
     root <- -(b/(2*a))
-    print("There is one solutions")
+    print("There is one solution")
     print (root)
   }
   else  {
@@ -54,7 +54,7 @@ quadratic_solver <- function(a,b,c){
 }
  
 
-quadratic_solver(-1,2,3)
+
 
 #### Use R to determine how many numbers from 1 to 1000 are not divisible by any of 3,7, and 11 ####
 
