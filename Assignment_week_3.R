@@ -165,7 +165,8 @@ count_na(vector_with_some_missing) #ans 5
          }  
       } }
      }
-   output <- list(c("distinct_elements"=level_num, "most_occuring_element"=max_level, "how_many_times"=max_count, "missing_values"=(length(input)-length(without_na))))
+   output <- list(c("distinct_elements"=level_num, "most_occuring_element"=max_level, "how_many_times"=max_count, 
+   "missing_values"=(length(input)-length(without_na))))
  return(output)  
  }
 
