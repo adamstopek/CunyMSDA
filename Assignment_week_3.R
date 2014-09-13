@@ -13,17 +13,11 @@
    }
    print(count)
  }
- 
-vector_with_some_missing <- c("this",NA,"has",NA,"5",NA,"missing",NA,"values",NA)
-count_na(vector_with_some_missing) #ans 5
- 
+
  ##### q2 #####
  #Write a function that takes a data frame as input and returns a named vector with the number of missing 
  #values in each column of the data frame. (The names of the entries should be the corresponding column 
  #names of the data frame.) You may use the function from the previous question as part of your solution.
- 
- (colnames(days_month_years))
- ncol(days_month_years)
  
  count_na_df  <- function(df) {
        output = data.frame(c(1))
@@ -48,10 +42,7 @@ count_na(vector_with_some_missing) #ans 5
        colnames(output) <- c(names)
        print(output)
      }
- 
- df= data.frame(a=c(1,NA), b=c(2,3), d=c(NA,NA))
- count_na_df(df)
- 
+
 ##### q3 ######
  #Write a function that takes a numeric vector as input and uses it to determine the minimum, the maximum, 
  #the mean, the median, the first quartile, the third quartile, the standard deviation of the vector, and the 
@@ -119,10 +110,6 @@ count_na(vector_with_some_missing) #ans 5
    
    print(output)
  }
- 
- 
- 
- 
  
  ####q4####
  #Write a function that takes a character or factor vector and determines a) the number of distinct elements in 
@@ -223,12 +210,4 @@ count_na(vector_with_some_missing) #ans 5
    
    return(all_output)
  }    
-  
- v1 <- as.factor(c(1,1,2,3,1,NA,NA))
- v2 <- as.numeric(c(1:5, NA, 6))
- v3 <- as.logical(c(T,F,T,F,F,F,NA))
- df <- data.frame(v1,v2,v3)
- 
- describe_df(df)
- 
   
