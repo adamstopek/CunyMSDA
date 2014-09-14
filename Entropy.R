@@ -53,18 +53,6 @@ infogain(entropy.test.file$answer, entropy.test.file$attr3 )
 ##### q3 #####
 #create function decide() which find max gain. It takes a data frame and a number for where target var is and runs on other cols
 
-target <- 4
-df <- entropy.test.file
-columns_in_df <- ncol(df)
-vector_of_cnums <- c(1:columns_in_df)
-attributes <- vector_of_cnums[which(vector_of_cnums!=4)] 
-
-d <- df[,target]
-a1 <- df[,attributes[1]]
-df <- data.frame(d,a1)
-
-
-
 decide <- function(input, target) {
   columns_in_df <- ncol(input)
   vector_of_cnums <- c(1:columns_in_df)
