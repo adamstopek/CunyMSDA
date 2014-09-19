@@ -12,7 +12,7 @@ barplot(freq, ylim=c(0,20000), main="Movies per Decade", xlab="Decade", ylab="Nu
 ##### q2 Average IMDB rating per genre over time #####
 ratings_and_category <- subset(movies,  select = c("decade", "rating", "Action", "Comedy", "Drama", "Documentary", "Romance", "Short"))
 
-
+#melt data to make it easier to work with
 mdata <- melt(ratings_and_category, id=c("decade","rating"))
 mdata <- mdata[mdata$value==1,]
 rownames(mdata) <- NULL
@@ -25,7 +25,7 @@ rating_category <- subset(mdata,  select = c(2:3))
 avg_rating_per_cat <- subset(aggregate(rating_category, by=list(rating_category$category), FUN=mean, na.rm=TRUE), select= c(1:2))
 names(avg_rating_per_cat)<- c("Category","Average_Rating")
 ggplot(data=avg_rating_per_cat, aes(x=Category, y=Average_Rating, fill=Category)) + geom_bar(stat="identity")
-
+# graph shows average rating per category
 
 #movie ratings over time per category
 rating_category_decade <- subset(mdata,  select = c(1:3))
@@ -33,6 +33,8 @@ avg_rating_per_cat_per_decade <- aggregate(rating_category_decade, by=list(ratin
 avg_rating_per_cat_per_decade <- subset(avg_rating_per_cat_per_decade,  select = c(1,2,4))
 names(avg_rating_per_cat_per_decade)<- c("Decade","Category","Average_Rating")
 ggplot(data=avg_rating_per_cat_per_decade, aes(x=Decade, y=Average_Rating, group=Category, color=Category)) + geom_line(size=1.5) + geom_point() 
+#graph show line chart of average rating per category per decade, shows that old movies have very low ratings
+#and that they dont stabile until the last few decades
 
 ##### q3 relation between length and rating?#####
 #I chose to do a linear regression model on Rating (Y) and Length(X)
@@ -113,6 +115,7 @@ summary(fit)
 # We can only pay attention to votes vs others but this will tell us a lot about other relationships
 #budget is mostly NA (unknow) so I wont use it, rating will be used instead of distirubtion of ratings
 # I will check Age (2005-year), length, rating, mpaa (transformed to binary), genres
+#new transformed variales
 movies$age <- 2005-movies$year
 movies$mpaa_r <-ifelse(movies$mpaa=="R", 1, 0)
 movies$mpaa_pg13 <-ifelse(movies$mpaa=="PG-13", 1, 0)
@@ -120,6 +123,7 @@ movies$mpaa_pg <-ifelse(movies$mpaa=="PG", 1, 0)
 movies$mpaa_nc17 <-ifelse(movies$mpaa=="NC-17", 1, 0)
 
 vars <- subset(movies, select = c("votes","age", "length", "rating", "mpaa_r", "mpaa_pg13", "mpaa_pg", "mpaa_nc17","Action", "Comedy", "Drama", "Documentary", "Romance", "Short" ))
+#Correlation matrix
 ctab <- cor(vars)
 round(ctab, 2)
 
