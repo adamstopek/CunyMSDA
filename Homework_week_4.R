@@ -24,11 +24,16 @@ names(yearly_num_movies)<- c("year","amount_of_movies")
 library(plyr)
 joined_data <- join(yearly_avg_score, yearly_num_movies, by = "year", type = "inner", match = "all")
 
+#take only years with a minumum of X movies made : example x=200
+min_amount_of_movies <- joined_data[joined_data$amount_of_movies>=200,]
+answer <- min_amount_of_movies[min_amount_of_movies$average_score==max(min_amount_of_movies$average_score),]
+answer
+
+
+
 library(ggplot2)
-score_plot <- ggplot(data=joined_data, aes(x=year, y=average_score)) + geom_line(size=1.5) + geom_point() 
-number_of_movies_plot <- ggplot(data=joined_data, aes(x=year, y=amount_of_movies)) + geom_line(size=1.5) + geom_point()
+score_plot <- ggplot(data=min_amount_of_movies, aes(x=year, y=average_score)) + geom_line(size=1.5) + geom_point() 
+#number_of_movies_plot <- ggplot(data=min_amount_of_movies, aes(x=year, y=amount_of_movies)) + geom_line(size=1.5) + geom_point()
 
 #Graph of score
 score_plot
-#Graph of number of movies
-number_of_movies_plot
