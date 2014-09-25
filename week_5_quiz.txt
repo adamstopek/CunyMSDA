@@ -1,0 +1,50 @@
+IS 607 Week 5 Quiz -- Adam Stopek
+
+Reading Quiz: "Tidy Data"
+Question 1:
+Data "tidying" is what Hadley Wickham calls structuring datasets to facilitate analysis.
+
+Question 2:
+Three properties in tidy data are:
+Each observation is a row
+Each column is a variable
+Each observation unit forms a table
+
+Question 3:
+The five most common problems with messy datasets are:
+Column headers are values and not variable names
+One column contains multiple variables
+Variables are stored in both columns and rows
+The same table is used to store different types of observations units
+A single observational unit is stored across multiple tables
+
+Question 4:
+Define the following:
+Filter: Filtering is the act of subsetting the data or selecting specific observations that meet a specific condition.
+Transform: Transforming the data is the act of modifying or adding a variable. An example of this is performing a log transformation to the data, or adding up to column together to form a new variable
+Aggregate: Aggregating the data is the act of collapsing multiple values into a single value. An example of this is summing up a variable or averaging it.
+Sort: Sorting the data is the act of changing the order of it. For example sorting a variable in descending order.
+
+Question 5:
+The function in base R for filtering data is subset()
+
+
+Reading Quiz: "Introduction to dplyr"
+
+Question 1:
+Advantages/Disadvantages to using dply over plyr package:
+Advantages: Much faster, Better joins, smarter printing
+Disadvantages: Can only be used with data frames
+
+Question 2:
+Advantages/Disadvantages to using plyr over base function:
+Advantages: Joining is easier, aggregate functions, less verbose 
+Disadvantages: Base functions work well with vectors
+
+Reading Quiz: "tidyr"
+Question 1:
+What are the two functions in the tidyr package that correspond to spreadsheet functions pivot and unpivot?
+gather() corresponds to pivtoing data
+spread() corresponds to unpivoting data
+
+
