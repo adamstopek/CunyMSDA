@@ -1,0 +1,86 @@
+---
+title: "Project 2 Data Set Exploration"
+author: "Adam Stopek"
+date: "Sunday, October 05, 2014"
+output: html_document
+---
+The data set I chose to work on was a data set about wine quality related to red and white variants of the Portuguese "Vinho Verde" wine. There are 6497 data observations with 12 different variables. Here is a discription of the data set. There are no missing variables in any of the observations.
+
+```{r, echo=FALSE, message=FALSE,  warning=FALSE}
+library(ggplot2)
+#install.packages("corrplot")
+library(corrplot)
+#install.packages("ellipse")
+library (ellipse)
+#install.packages("pROC")
+library(pROC)
+library(MASS)
+
+wine_quality <- read.csv("C:/Users/adams/Desktop/wine_quality.csv")
+wine_quality$quality <- as.integer(wine_quality$quality)
+wine_quality$color <- as.factor(wine_quality$color)
+summary(wine_quality)
+
+```
+Here are distributions of all the data
+
+
+```{r, echo=FALSE, message=FALSE,  warning=FALSE}
+hist(wine_quality$fixed.acidity)
+hist(wine_quality$volatile.acidity)
+hist(wine_quality$citric.acid)
+hist(wine_quality$residual.sugar)
+hist(wine_quality$chlorides)
+hist(wine_quality$free.sulfur.dioxide)
+hist(wine_quality$total.sulfur.dioxide)
+hist(wine_quality$density)
+hist(wine_quality$pH)
+hist(wine_quality$sulphates)
+hist(wine_quality$alcohol)
+ggplot(data=wine_quality, aes(x=quality))+  geom_bar()
+ggplot(data=wine_quality, aes(x=color)) + geom_bar()
+```
+
+
+
+Lets look at whether there are any correlated variables. Below is the cross correlation matrix and a visuallization of it
+
+```{r, echo=FALSE , message=FALSE,  warning=FALSE}
+numeric_vars <- subset(wine_quality, select=c(1:12))
+numeric_vars$quality <- as.numeric(numeric_vars$quality)
+cross_tab <- cor(numeric_vars)
+plotcorr(cross_tab)
+````
+
+Here are the list of Strong Correlations: Alchohol with Density, Total Sulfur Dioxide with Free sulfar dioxide, Density with Residual Sugar, Alchohol with Quality
+
+
+What makes a good wine? This question can be answered using Logistic Regression on Quality. The mean value given to quality was 5.8, so I will create a new variable called above average quality and run a classification model on it. I will run a logistic regression and then a step wise procedure on the regression to get only the best variables
+```{r, echo=FALSE, , message=FALSE,  warning=FALSE}
+wine_quality$quality <- as.numeric(wine_quality$quality)
+wine_quality$above_avg_quality <- ifelse(wine_quality$quality<6,0,1)
+wine_quality=na.omit(wine_quality)
+logistic_model <- glm(above_avg_quality ~   fixed.acidity  + volatile.acidity + color +citric.acid + residual.sugar+ chlorides +  free.sulfur.dioxide + total.sulfur.dioxide + density + pH +  sulphates + alcohol , data = wine_quality, family="binomial")
+summary(logistic_model)
+step_wise <-step(logistic_model, direction = "both")
+final_logistic_model <- glm(above_avg_quality ~ fixed.acidity + volatile.acidity + color + citric.acid + residual.sugar + free.sulfur.dioxide + total.sulfur.dioxide + density + pH + sulphates + alcohol,  data = wine_quality, family="binomial")
+````
+This is the model I used to predict quality. It is a stepwise logistic regression model.
+```{r, echo=FALSE}
+
+summary(final_logistic_model)
+prob <- predict(final_logistic_model,type=c("response"))
+wine_quality$prob <- prob
+roc_curve <- roc(above_avg_quality ~ prob, data = wine_quality)
+````
+Here is the ROC curve which describes the quality of this model
+```{r, echo=FALSE}
+plot(roc_curve) 
+````
+
+
+Citation:
+
+P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis. 
+  Modeling wine preferences by data mining from physicochemical properties.
+  In Decision Support Systems, Elsevier, 47(4):547-553. ISSN: 0167-9236.
