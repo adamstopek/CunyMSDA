@@ -1,0 +1,117 @@
+Assignment 7 -- Adam Stopek
+
+Question 1) Create a new database in PostgreSQL. You may use a graphical tool to populate the database.
+
+Done. I used the GUI to this by right clicking on databases and creating a new one.
+This is the code I could have used for this:
+
+CREATE DATABASE week7
+  WITH OWNER = postgres
+  ENCODING = 'UTF8'
+  TABLESPACE = "IS607"
+  LC_COLLATE = 'English_United States.1252'
+  LC_CTYPE = 'English_United States.1252'
+  CONNECTION LIMIT = -1;
+  
+Question 2)
+Populate your newly created database with two tables that have a one-to-many relationship. You should create the two tables using the CREATE TABLE command. There should be at least one example each of integer, numeric, character, and a date data type in at least one of the two tables. There should be at least one character column that allows NULLs. Deliverable: Your two CREATE TABLE statements.
+
+Table 1) This table has the web history of users. It shows what urls they visited, when, for how long (seconds), and who was the referrer (if there was).
+
+CREATE TABLE webhistory
+(
+  user_id integer NOT NULL,
+  date date NOT NULL,
+  url_id integer NOT NULL,
+  referrer character(1000),
+  timespent numeric NOT NULL,
+  CONSTRAINT webhistory_pkey PRIMARY KEY (url_id)
+)
+;
+
+Table 2) This table has information about urls. It gives each a url_id, the url (url_domain) and what category (url_type) the url belongs to (blog, news, search, social etc...). Citation: this table was taken from wikipedia for the top 100 websites according to alexa. Link: http://en.wikipedia.org/wiki/List_of_most_popular_websites
+
+CREATE TABLE urls
+(
+  url_id integer NOT NULL,
+  url_type character(1000),
+  url_domain character(1000),
+  CONSTRAINT urls_pkey PRIMARY KEY (url_id)
+)
+;
+
+Question 3)
+Populate the two tables with some sample data, using INSERT statements. Each table should contain at least three records, and the data should accurately reflect the one-to-many relationship. There should also be at least one row where the character column that allows NULL values has a value of NULL. Deliverable: your set of INSERT statements.
+
+Populating table 1:
+INSERT INTO webhistory (user_id, date, url_id, referrer, timespent)
+VALUES
+	(19,'2014-08-26',2,'google.com',71.66484287),
+	(5,'2014-08-01',1,'',62.88988598),
+	(25,'2014-09-03',63,'',69.52067068),
+	(6,'2014-08-05',1,'',93.26262466),
+	(1,'2014-10-03',68,'google.com',34.94133699),
+	(4,'2014-08-02',45,'',59.90933695);
+	
+Populating table 2:
+INSERT INTO urls (url_id, url_type, url_domain)
+VALUES
+	(1,'Search','google.com'),
+	(2,'Social networking','facebook.com'),
+	(3,'Video sharing','youtube.com'),
+	(4,'Search','yahoo.com'),
+	(5,'Search','baidu.com'),
+	(6,'Reference','wikipedia.org'),
+	(7,'Portal','qq.com'),
+	(8,'Commerce','taobao.com'),
+	(9,'Microblogging','twitter.com'),
+	(10,'Portal and search engine','live.com'),
+	(11,'Commerce','amazon.com'),
+	(12,'Social networking','linkedin.com')
+;
+
+Question 4)
+Provide samples of the different kinds of joins across the two tables. You should include one join that performs a WHERE on the COLUMN that allows a NULL value. Deliverable: Your SELECT statements.
+
+Of the list of domains in the urls table, these are the 5 most popular (by timespent):
+SELCT b.url_domain, sum(timespent) as visits
+FROM webhistory a
+INNER JOIN urls b
+ON a.url_id=b.url_id
+GROUP BY b.url_domain
+ORDER BY 2 desc
+LIMIT 5
+
+A list of the types of url that drive referrals and the amount driven:
+SELECT b.url_type, count(*) refferals
+FROM urls b
+LEFT OUTER JOIN webhistory a 
+ON b.url_domain= a.referrer 
+WHERE a.referrer is not null
+GROUP BY b.url_type
+
+full outer join of all the information:
+SELECT a.*, b.* 
+FROM webhistory a
+FULL OUTER JOIN urls b
+ON a.url_id = b.url_id
+
+Right join of the amount of users per url
+SELECT a.url, count(distinct b.user_id)
+FROM urls a
+RIGHT OUTER JOIN webhistory b
+ON a.url_id=b.url_id
+GROUP BY a.url
+
+Question 5)
+Create an Entity-Relationship (ER) diagramthat shows the two tables that you created.
+LINK: https://github.com/adamstopek/CunyMSDA/blob/DataAquisition/Schema.PNG
+
+
+
+
+
+
+
+
+
