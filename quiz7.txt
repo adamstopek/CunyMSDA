@@ -1,0 +1,48 @@
+Quiz Week 7 -- Adam Stopek 
+
+Question 1) 
+Install PostgreSQL: Done
+
+Question 2) 
+How many Films contain the word bride in their title:
+
+There are 2 movies with the name bride in their title
+
+query:
+Select COUNT(*)
+FROM film
+where lower(title) like '%bride%';
+
+They are: "Bride Intrigue", "Saints Bride"
+
+
+Question 3)
+Give one example of functionality that exists in PostgreSQL that is a superset of ANSI SQL’s functionality: 
+Window Functions
+
+What are the advantages of using or not using this functionality in a database application? 
+Window functions are great way to get aggregations done on different levels of grouping. An example of a great use case is if you have a table that contains a date and the number of sales transactions. By using a window function, you can get a running running sum of the amount of sales by week, month, and year. This would be a very difficult query without this functionality. 
+
+Question 4)
+Suppose someone wants to delete a customer that owes money. Describe (using the names of the appropriate tables in the sample database described in the tutorial) how the database should respond to a DELETE statement.
+
+This query can be used to delete all the rows in the TABLE customers where the customer_id has an unpaid rental:
+
+
+
+DELETE FROM customers
+WHERE customer_id IN 
+(SELECT DISTINCT a.customer_id
+FROM rental a
+LEFT JOIN payment b
+ON a.rental_id = b.rental_id
+AND b.payment_id is null);
+
+A quick explanation of the query:
+Let start with the subquery. There I join the rental table with the payment table. I do a left join here because there will be rentals without payments. Because it is those rows that I am interested in (where there is no record of payment for a rental id) I place a condition of where payment is null (ie there has not been  payment and the customer owes money). Since a user might have more than one row of unpaid rentals and I want a distinct list of customers I run the query with a distinct (it would work without it as well). Then I have a distinct list of all the customers that owe money. Now I can run the delete statement with a condition that the customer_id is in the list I provided. It will now delete the rows of the table that answer to the condition of the customer owing money.
+
+
+
+
+
+
