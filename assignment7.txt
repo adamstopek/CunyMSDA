@@ -24,9 +24,8 @@ CREATE TABLE webhistory
   date date NOT NULL,
   url_id integer NOT NULL,
   referrer character(1000),
-  timespent numeric NOT NULL,
-  CONSTRAINT webhistory_pkey PRIMARY KEY (url_id)
-)
+  timespent numeric NOT NULL
+  )
 ;
 
 Table 2) This table has information about urls. It gives each a url_id, the url (url_domain) and what category (url_type) the url belongs to (blog, news, search, social etc...). Citation: this table was taken from wikipedia for the top 100 websites according to alexa. Link: http://en.wikipedia.org/wiki/List_of_most_popular_websites
