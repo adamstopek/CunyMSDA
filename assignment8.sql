@@ -1,3 +1,6 @@
+--Deliverable 1) URL:http://googleblog.blogspot.co.uk/
+--Deliverable 2) entity-relationship diagram: https://github.com/adamstopek/CunyMSDA/blob/DataAquisition/20141017_182923.jpg
+--Deliverable 3) Implement DB
 -- Create DB
 CREATE DATABASE blogs
 WITH OWNER = postgres
@@ -30,9 +33,8 @@ CREATE TABLE blog_comments
    comment text NOT NULL
 ) 
 ;
---  entity-relationship diagram: https://github.com/adamstopek/CunyMSDA/blob/DataAquisition/20141017_182923.jpg
 
-
+--Deliverable 4) Populate DB
 -- Insert data into tables:
 INSERT INTO blog_posts VALUES
 (1,'Android: Be together. Not the same', 'http://googleblog.blogspot.co.uk/2014/10/android-be-together-not-same.html','Sundar Pichai'),
@@ -54,6 +56,7 @@ INSERT INTO blog_comments VALUES
 (2, 'I cant believe that teens like to talk'),
 (3, 'shopping is fun');
 
+--Deliverable 5) Queries and results
 --  SQL query that returns all of the blog posts, with associated comments and tags
 -- this query uses array_agg to aggregate all the tags into a single array as well as all the comments into a single array
 -- the reason for this is because we want only one row per blog post to return from the query
