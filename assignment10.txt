@@ -1,0 +1,24 @@
+Week 10 Assignment:
+
+Implement a map-reduce solution to determine total population by state. 
+You may submit your code as a text file
+
+This is the map function which maps state and population 
+
+var mapFunction = function() {
+                       emit(this.state, this.pop);
+                   };	
+
+This is the reduce function which sums up population values for each state
+				   
+var reduceFunction = function(keyState, valuesPop) {
+                          return Array.sum(valuesPop);
+                      };
+
+Now we implement the functions and output the results to a new collection
+					  
+db.zipcodes.mapReduce(
+                     mapFunction,
+                     reduceFunction,
+                     { out: "state_populations" }
+                   );	

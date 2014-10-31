@@ -1,0 +1,26 @@
+Quiz week 10
+
+Question 1: Which states have populations less than eight million?
+
+db.zipcodes.aggregate(
+					 {$group:{_id: "$state" ,total_population : { $sum : "$pop" }}},
+					 {$match:{total_population : { $lt : 8000000 }}}
+					)	
+
+Question 2: What is the fifth largest city in New York?
+
+db.zipcodes.aggregate(
+                     { $match: { state: "NY" } },
+                     { $group: { _id: "$city", total_population: { $sum: "$pop" } } },
+                     { $sort: { total_population: -1 } },
+					 { $skip: 4 },
+					 { $limit: 1 }
+					 )
+				   
+Question 3: What is the total number of cities in each state according to this data set?				   
+
+db.zipcodes.aggregate(
+						{ $group: {_id: {state: "$state", city: "$city"}, counter: {$sum: 1}}},
+						{ $group: {_id: {state: "$_id.state"}, cities: {$sum: 1}}}
+						)
+				  
