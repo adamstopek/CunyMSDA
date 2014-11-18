@@ -1,0 +1,44 @@
+Deliverable 1) Loading the data and creating the graph
+
+--Students file was entered as is
+load csv with headers from "file:C:/Users/adams/Desktop/neo4j/students.csv" as students create (s1:student {id: students.SID, gender: students.Gender, first_name: students.GivenName, last_name: students.Surname, address: students.StreetAddress, city: students.City, state: students.State, zip: students.ZipCode, tel: students.TelephoneNumber, dorm: students.Dormitory, room: students.Room})
+
+-- dorms file was taken from students it was the distinct dormitory name
+load csv with headers from "file:C:/Users/adams/Desktop/neo4j/dormitory.csv" as dorms create (d1:dorm {dorm_name: dorms.Dormitory})
+
+-- This matched students to their dorm
+load csv with headers from "file:C:/Users/adams/Desktop/neo4j/students.csv" as students match (a:student {room: students.Room}),  (b:dorm {dorm_name: students.Dormitory}) create (a) - [r:Housed {room: students.Room}] -> (b)
+
+-- Load completed courses (seperate file)
+load csv with headers from "file:C:/Users/adams/Desktop/neo4j/completed.csv" as completed MERGE (c1:course {course_name: completed.CourseName, dept: completed.CourseDept, number: completed.CourseNumber, instructor: completed.Instructor}) 
+
+--Match students to courses (completed )
+load csv with headers from "file:C:/Users/adams/Desktop/neo4j/completed.csv" as completed MATCH (a:student {last_name: completed.Surname}),(b:course {course_name: completed.CourseName}) Create (a) - [:Completed {section : completed.Section, instructor: completed.Instructor, grade: completed.Grade}] -> (b)
+
+-- Load enrolled course (seperate file)
+load csv with headers from "file:C:/Users/adams/Desktop/neo4j/enrolled.csv" as enrolled MERGE (c1:course {course_name: enrolled.CourseName, dept: enrolled.CourseDept, number: enrolled.CourseNumber, instructor: enrolled.Instructor}) 
+
+--Match students to courses (enrolled)
+load csv with headers from "file:C:/Users/adams/Desktop/neo4j/enrolled.csv" as enrolled MATCH (a:student {last_name: enrolled.Surname}),(b:course {course_name: enrolled.CourseName}) Create (a) - [:Enrolled {section : enrolled.Section, instructor: enrolled.Instructor, grade: enrolled.Grade}] -> (b)
+
+Visualization of Graph: https://github.com/adamstopek/CunyMSDA/blob/DataAquisition/Neo4j%20Graph%20Students.png
+
+Deliverable 2) SQL or Graph?
+From what I understand querying a graph db is much much faster, as relationships are pre defined. You would never need complex joins when querying as everything is prejoined. Its also great for visualizing connections. However the setup time took me hours for something that would have taken me 5 minutes in SQL. It might be a learning curve, but from the little I have used it, I would favour SQL.
+
+Deliverable 3) Write the Cypher query that will find all of the roommates of the student Richard Kowalski.
+
+match (dorm {room:'301'}) return (dorm)
+
+Deliverable 4) Finally, suppose you were told Richard Kowalski, who was enrolled in section 12136 of Math 120: Finite Mathematics, completed the course with a grade of B. Show the query that would find the appropriate relationship and update both the label (enrolled to completed) and the grade.
+
+MATCH (n:student {first_name:"Richard", last_name: "Kowalski"})-[r:Enrolled]->(m:course {number:"120"})
+CREATE (n)-[r2:Completed]->(m)
+SET r2 = r
+WITH r
+DELETE r
+
+MATCH (n:student {first_name:"Richard", last_name: "Kowalski"})-[r:Completed]->(m:course {number:"120"})
+SET r.grade = 'B'
+
+
