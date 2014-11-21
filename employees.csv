@@ -1,5 +1,5 @@
-Office,Department,Manager,Name,Level,Salary,Phone Number,Employee Number
-San Francisco,Engineering,Bob,Gwen,E1,"80,000",5282288363,836
+Office,Department,Manager,Name,Level,Salary,Phone_Number,Employee_Number
+San Francisco,Engineering,Bob,Gwen,E1,80000,5282288363,836
 San Francisco,Engineering,Bob,Sam,E1,75000,4827798031,239
 San Francisco,Engineering,Bob,Bill,E2,95000,6853586848,671
 San Francisco,Engineering,Joe,Tom,E1,82000,9132579279,568
@@ -15,7 +15,7 @@ New York,Sales,Samantha,Adam,IC2,75000,2103991747,287
 San Francisco,Engineering,Mark,Bob,M1,110000,2295128347,704
 San Francisco,Engineering,Mark,Joe,M2,123000,9025532808,857
 San Francisco,Finance,Mark,Michael,M1,105000,4341764750,369
-New York,Design,Mark,Samantha,M2,145000,5428463458,996
-New York,Sales,Mark,Kim,M2,130000,4670616053,363
+New York,Sales,Mark,Samantha,M2,145000,5428463458,996
+New York,Design,Mark,Kim,M2,130000,4670616053,363
 New York,Finance,Mark,Paul,M1,120000,5597412563,936
-San Francisco,,,Mark,M3,1000000,6176621431,1
+San Francisco,Engineering,,Mark,M3,1000000,6176621431,1
