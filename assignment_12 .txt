@@ -1,0 +1,52 @@
+Assignment Week 12 -- Neo4j
+
+Use case for graph db
+
+1) A high-level description of the business use case you have chosen:
+
+I have chosen to graph a Organization Chart for a tech company with many offices and departments. A question one might ask is to find all employees at a specific location who have a specific seniority. 
+
+2) A description of the data model (define the nodes, relationships, and attributes that will be used and how they will fit together)  
+
+The nodes would be as follows:
+- Office (Office Name, Address, Capacity, Square Footage)
+- Department (Department Name)
+- Employee (Name, Phone number, Level, Salary, Employee Number)
+
+Relationships:
+- Reports to (connects between employees to their managers)
+- Part of (which department the employee works in)
+- Works at (where the employee works from)
+
+3) A small sample of data to illustrate what the raw data are that will be used.
+
+employees.csv: https://github.com/adamstopek/CunyMSDA/blob/DataAquisition/employees.csv
+offices.csv: https://github.com/adamstopek/CunyMSDA/blob/DataAquisition/offices.csv
+departments.csv: https://github.com/adamstopek/CunyMSDA/blob/DataAquisition/departments.csv
+
+4)The code for queries to acquire and manage the data in Neo4j
+
+--Office Nodes
+load csv with headers from "file:C:/Users/adams/Desktop/neo4j/offices.csv" as offices create (o1:office {city: offices.Office, address: offices.Address, cap: offices.capacity, sgft: offices.Sqft})
+
+--Dept Nodes
+load csv with headers from "file:C:/Users/adams/Desktop/neo4j/departments.csv" as depts Create (d1:department {department: depts.Department}) 
+
+--Employee Node
+load csv with headers from "file:C:/Users/adams/Desktop/neo4j/employees.csv" as employees create (e1:employee {name: employees.Name, level: employees.Level, salary: employees.Salary, ph_num: employees.Phone_Number, employee_num: employees.Employee_Number})
+
+--Reports_to relationship
+load csv with headers from "file:C:/Users/adams/Desktop/neo4j/employees.csv" as employees Match (a:employee {name: employees.Name}), (b:employee {name: employees.Manager}) create (a) - [r:reports_to] -> (b)
+
+--Part of relationship
+load csv with headers from "file:C:/Users/adams/Desktop/neo4j/employees.csv" as employees Match (a:employee {name: employees.Name}), (b:department {department: employees.Department}) create (a) - [r:part_of] -> (b)
+
+-- Works at relationship
+load csv with headers from "file:C:/Users/adams/Desktop/neo4j/employees.csv" as employees Match (a:employee {name: employees.Name}), (b:office {city: employees.Office}) create (a) - [r:works_at] -> (b)
+
+Here is a picture of the graph: https://github.com/adamstopek/CunyMSDA/blob/DataAquisition/company%20structure.png
+
+5) Find all Entry Level Engineers (E1) that works at San Francisco Office
+
+match (a {level: "E1" }) - [r:works_at] - >(office {city:"San Francisco"}) 
+Return a
