@@ -30,8 +30,8 @@ Deliverable 3) Write the Cypher query that will find all of the roommates of the
 
 match (dorm {room:'301'}) return (dorm)
 
-Deliverable 4) Finally, suppose you were told Richard Kowalski, who was enrolled in section 12136 of Math 120: Finite Mathematics, completed the course with a grade of B. Show the query that would find the appropriate relationship and update both the label (enrolled to completed) and the grade.
 
+Deliverable 4) Finally, suppose you were told Richard Kowalski, who was enrolled in section 12136 of Math 120: Finite Mathematics, completed the course with a grade of B. Show the query that would find the appropriate relationship and update both the label (enrolled to completed) and the grade.
 MATCH (n:student {first_name:"Richard", last_name: "Kowalski"})-[r:Enrolled]->(m:course {number:"120"})
 CREATE (n)-[r2:Completed]->(m)
 SET r2 = r

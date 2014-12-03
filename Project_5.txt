@@ -1,0 +1,55 @@
+R Code: 
+#install.packages('nycflights13')
+library(nycflights13)
+
+#limiting the files to contain just a subset of only Delta, United and American 
+#this is so that community edition of neo4j can handle the data
+just_3_airlines <- c('AA','UA','DL')
+
+#subset the airlines and flights data to have only the relevant airlines
+airlines_subset <- airlines[is.element(airlines$carrier, just_3_airlines),]
+flights_subset <- flights[is.element(flights$carrier, just_3_airlines), c("carrier", "flight", "origin", "dest")]
+
+#because I only want to look at some of the columns, I need to keep only unique vals
+flights_subset <- unique(flights_subset[,c("carrier", "flight", "origin", "dest")])
+
+#Find only relevant airports (where the three airlines fly to and from)
+unique_origins <- unique(flights_subset[,"origin"])
+unique_destinations <- unique(flights_subset[,"dest"])
+relevant_airports <- unique(c(unique_origins,unique_destinations))
+
+#subset the airports
+airports_subset <- airports[is.element(airports$faa, relevant_airports),]
+
+#write the three subsetted data to csv's to be loaded in Neo4j
+write.csv(airlines_subset, file = "C:/Users/adams/Desktop/flights data set/airlines.csv", na='', quote = FALSE)
+write.csv(airports_subset, file = "C:/Users/adams/Desktop/flights data set/airports.csv", na='', quote = FALSE)
+write.csv(flights_subset, file = "C:/Users/adams/Desktop/flights data set/flights.csv", na='', quote = FALSE)
+
+Neo4j Code:
+
+#Load the Nodes
+LOAD CSV WITH HEADERS FROM "file:C:/Users/adams/Desktop/flights data set/airlines.csv" AS row CREATE (a:Airline {Carrier: row.carrier, Name: row.name});
+LOAD CSV WITH HEADERS FROM "file:C:/Users/adams/Desktop/flights data set/airports.csv" AS row CREATE (b:Airport {FAA: row.faa, Name: row.name, Lat: row.lat, Lon: row.lon, TZ: row.tz, DST: row.dst});
+LOAD CSV WITH HEADERS FROM "file:C:/Users/adams/Desktop/flights data set/flights.csv" AS row CREATE (c:Flight {Carrier: row.carrier, Flight_Number: row.flight, Origin: row.origin, Destination: row.dest});
+
+#Create the Relationships
+LOAD CSV WITH HEADERS FROM "file:C:/Users/adams/Desktop/flights data set/flights.csv" AS row MATCH (a:Airline {Carrier: row.carrier}),(b:Flight {Carrier: row.carrier}) Create (b) - [:Part_of_fleet] -> (a)
+
+LOAD CSV WITH HEADERS FROM "file:C:/Users/adams/Desktop/flights data set/flights.csv" AS row MATCH (a:Flight {Carrier: row.carrier, Flight_Number: row.flight}),(b:Airport {Destination: row.dest}) Create (a) - [:Arrives_at] -> (b)
+
+LOAD CSV WITH HEADERS FROM "file:C:/Users/adams/Desktop/flights data set/flights.csv" AS row MATCH (b:Flight {Carrier: row.carrier, Flight_Number: row.flight}),(a:Airport {Origin: row.origin}) Create (b) - [:Departs_from] -> (a)
+
+#Query the DB
+#Return all flights Arriving at Ohare Airport
+
+MATCH (Airport { FAA:'ORD' })<-[:Arrives_at]-(Flight)
+RETURN Flight
+
+#What are the advantages and disadvantages of having this information in a graph #database instead of a relational database?
+
+Here are the Main Differences:
+1) GraphDB relationships are stored for each individual Node while SQL allows for us to change the relationships and decide on the fly.
+2) Because the relationships aren't stored in SQL it takes up less physical space.
+3) SQL is much faster with a lot of data. I had to severely limit the data I was bringing in to Neo4j (mainly because of the use of community version) in order to allow it to load in a reasonable time. (See the R code). 
+4) Querying 3rd+ degree connections in SQL can be difficult and take a lot more time. Here is where GraphDB really shines. As the degree of the connection grows, the performance in SQL can slow to a halt, not to mention the query complexity, while GraphDB will have no problem returning answers.
