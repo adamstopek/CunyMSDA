@@ -1,0 +1,280 @@
+## IS 607 Final Project
+
+## Predicting internet penetration rates
+
+#### Adam Stopek
+
+#### Sunday, December 14, 2014
+
+---
+output: html_document
+---
+### Introduction: 
+The internet is the greatest educational tool around today. The fact that I can study at a university that is physically located 6000 miles away from me is astounding. My belief is that internet penetration is strongly correlated to literacy levels. According to a press release by internet.org over 85% of the world is within range of picking up internet signals but only about 35% of the world actually use the internet. I would like to first quantify the correlation between literacy and internet penetration and then study some of the other factors that contribute to a higher internet penetration rate on a country level.
+
+### Feature Selection:
+In order to find data I have scoured wikipedia and some other sites for country level data which I believe might be relevant towards affecting internet penetration. The features that I have come up with are:
+
+
+* The literacy rate of a nation
+
+* The GDP per capita (in USD)
+
+* The median age
+
+* The suicide rate
+
+* The unemployment rate
+
+* The population density
+
+* The ratio of males to females
+
+* The happy planet index, which is an index that says how happy the nation is
+
+* The percent of English speakers
+
+* The polution levels
+
+* The life expectancy
+
+In general these features are variables that I thought might have some effect on internet penetration rates. The reasons chosen may or may not be true. I will quickly try to explain some of the rationale for each of the features. Literacy rate is pretty obvious as internet is a text based world. GDP would be to understand if the costs are a barrier. The median age and life expectancy are because maybe internet is more prevelant amongst young people, or maybe old people, or possibly more developed countries have a higher life expectancy and also a higher adoption rate (merely because they re more developed). Suicide rate, unemployment rate (also related to cost barrier), happy planet index and polution rate all have to do with the populations desire to go on the internet. Ratio of males to females is based on an assumption that internet adoption is affected by gender. Population density was included under the assumption that a higher population density might mean better infrastructure. Finally percent English speakers is because most of the internet content is in English and unfortunately not the whole world speaks the language. 
+
+It is very possible that other reasons exist that could be predictive features, yet this is what I was able to think of to include.
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#install.packages("XML")
+#install.packages("gdata")
+#install.packages("stringr")
+#install.packages("ggplot2")
+#install.packages("corrplot")
+#install.packages("ellipse")
+#install.packages("reshape")
+#install.packages("hydroGOF")
+library(hydroGOF)
+library(reshape)
+library (ellipse)
+library(corrplot)
+library(XML)
+library(gdata)
+library(stringr)
+library(ggplot2)
+
+```
+
+### Data Collection and Retrieval:
+I started with scraping the data I found on the internet at the following URL's
+
+```{r, warning=FALSE, message=FALSE}
+penetration_url <- "http://data.worldbank.org/indicator/IT.NET.USER.P2"
+literacy_url <- "http://en.wikipedia.org/wiki/List_of_countries_by_literacy_rate"
+gdp_url <- "http://en.wikipedia.org/wiki/List_of_countries_by_past_and_projected_GDP_(PPP)"
+median_age_url <- "http://en.wikipedia.org/wiki/List_of_countries_by_median_age"
+life_expectancy_url <- "http://en.wikipedia.org/wiki/List_of_countries_by_life_expectancy"
+suicide_url <- "http://en.wikipedia.org/wiki/List_of_countries_by_suicide_rate"
+unemployment_url <- "http://en.wikipedia.org/wiki/List_of_countries_by_unemployment_rate"
+pop_density_url <- "http://simple.wikipedia.org/wiki/List_of_countries_by_population_density"
+male_female_ratio_url <- "http://en.wikipedia.org/wiki/List_of_countries_by_sex_ratio"
+hpi_url <- "http://en.wikipedia.org/wiki/Happy_Planet_Index"
+c02_url <- "http://en.wikipedia.org/wiki/List_of_countries_by_carbon_dioxide_emissions"
+eng_url <- "http://en.wikipedia.org/wiki/List_of_countries_by_English-speaking_population"
+populations_url <- "http://en.wikipedia.org/wiki/List_of_countries_by_population"
+```
+### Data Cleansing:
+Once reading the URL's into R, I had to massage the data to remove unused metrics from the tables as well as remove things like commas from the number fields and notes from the country field. A lot of regular expression work was used to clean up the data. Eventually from each URL my final data included only the country name and the specific metric as a numeric field. Some of the numeric fields were percentages and were displayed as a number between 0 and 100, I converted those to numbers between 0 and 1. Also in the case of GDP I only had the complete GDP and I had to devide it by population figures.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+penetration_url <- "http://data.worldbank.org/indicator/IT.NET.USER.P2"
+#####Scrape data from HTML and Massage data####
+
+#internet penetration figures
+
+penetration <- readHTMLTable(penetration_url, which = 1, header = TRUE, stringsAsFactors = FALSE)
+penetration <- penetration[,c(1,5)]
+names(penetration)<- c("country","penetration_rate")
+penetration$penetration_rate <- as.numeric(trim(penetration$penetration_rate))/100
+penetration$country <- trim(penetration$country)
+penetration <- penetration[complete.cases(penetration),]
+
+#literacy rates
+literacy_rates <- readHTMLTable(literacy_url, which = 5, header = TRUE, stringsAsFactors = FALSE, skip.rows = c(1,2))
+literacy_rates <- literacy_rates[,c(1,2)]
+names(literacy_rates)<- c("country","literacy_rate")
+literacy_rates$literacy_rate <- substr(literacy_rates$literacy_rate, 1, 4)
+literacy_rates$literacy_rate <- sub("%", "", literacy_rates$literacy_rate)
+literacy_rates$literacy_rate <- sub(">", "", literacy_rates$literacy_rate)
+literacy_rates$literacy_rate <- sub("<", "", literacy_rates$literacy_rate)
+literacy_rates$literacy_rate <- sub("-", "", literacy_rates$literacy_rate)
+literacy_rates$literacy_rate <- as.numeric(trim(sub("N/A", "", literacy_rates$literacy_rate)))/100
+literacy_rates$country <- trim(literacy_rates$country)
+
+#gdp
+gdp_rates<- readHTMLTable(gdp_url, which = 12, header = TRUE, stringsAsFactors = FALSE)
+gdp_rates <- gdp_rates[,c(1,5)]
+names(gdp_rates)<- c("country","gdp")
+gdp_rates$gdp <- sub(",", "", gdp_rates$gdp)
+gdp_rates$gdp <- sub(",", "", gdp_rates$gdp)
+gdp_rates$gdp <- as.numeric(trim(sub(",", "", gdp_rates$gdp )))
+gdp_rates$country <- trim(gdp_rates$country)
+populations <- readHTMLTable(populations_url, which = 1, header = TRUE, stringsAsFactors = FALSE)
+populations <- populations[,c(2,3)]
+names(populations)<- c("country","population")
+populations$population <- sub(",", "", populations$population)
+populations$population <- sub(",", "", populations$population)
+populations$population <- as.numeric(trim(sub(",", "", populations$population)))
+populations$country <- trim(substr(populations$country, 1, ifelse(is.na(str_locate(pattern ='\\(',populations$country)) ,length(populations$country),str_locate(pattern ='\\(',populations$country ))-2))
+populations$country <- trim(substr(populations$country, 1, ifelse(is.na(str_locate(pattern ='\\[',populations$country)) ,length(populations$country),str_locate(pattern ='\\[',populations$country ))-1))
+populations$country <- trim(populations$country)
+gdp_rates <- merge(populations, gdp_rates)
+gdp_rates$gdp_per_capita <- gdp_rates$gdp/gdp_rates$population*1000000
+gdp_rates <- gdp_rates[,c(1,4)]
+
+
+#median age
+median_age <- readHTMLTable(median_age_url, which = 2, header = TRUE, stringsAsFactors = FALSE)
+median_age <- median_age[,c(1,2)]
+names(median_age)<- c("country","median_age")
+median_age$median_age <- as.numeric(trim(median_age$median_age))
+median_age$country <- trim(median_age$country)
+
+#life_expectancy
+life_expectancy <- readHTMLTable(life_expectancy_url, which = 3, header = TRUE, stringsAsFactors = FALSE)
+life_expectancy <- life_expectancy[,c(2,3)]
+names(life_expectancy)<- c("country","life_expectancy")
+life_expectancy$country <- trim(substr(life_expectancy$country, 1, ifelse(is.na(str_locate(pattern ='\\(',life_expectancy$country)) ,length(life_expectancy$country),str_locate(pattern ='\\(',life_expectancy$country ))-2))
+life_expectancy$life_expectancy <- as.numeric(trim(substr(life_expectancy$life_expectancy, 1, 4)))
+
+#suicide
+suicide<- readHTMLTable(suicide_url, which = 2, header = TRUE, stringsAsFactors = FALSE)
+suicide <- suicide[,c(2,5)]
+names(suicide)<- c("country","suicide_rate")
+suicide$country <- trim(substr(suicide$country, 1, ifelse(is.na(str_locate(pattern ='\\[',suicide$country)) ,length(suicide$country),str_locate(pattern ='\\[',suicide$country ))))
+suicide$country <- trim(substr(suicide$country, 1, ifelse(is.na(str_locate(pattern ='\\(',suicide$country)) ,length(suicide$country),str_locate(pattern ='\\(',suicide$country ))))
+suicide$country <- trim(sub("\\[", "", suicide$country))
+suicide$country <- trim(sub("\\(", "", suicide$country))
+suicide$suicide_rate <- trim(substr(suicide$suicide_rate, 1, ifelse(is.na(str_locate(pattern ='\\(',suicide$suicide_rate)) ,length(suicide$suicide_rate),str_locate(pattern ='\\(',suicide$suicide_rate ))))
+suicide$suicide_rate <- as.numeric(trim(sub("\\(", "", suicide$suicide_rate)))/100
+
+#unemployment
+unemployment <- readHTMLTable(unemployment_url, which = 2, header = TRUE, stringsAsFactors = FALSE)
+unemployment <- unemployment[,c(1,2)]
+names(unemployment)<- c("country","unemployment_rate")
+unemployment$unemployment_rate <- trim(substr(unemployment$unemployment_rate , 1, ifelse(is.na(str_locate(pattern ='\\(',unemployment$unemployment_rate )) ,length(unemployment$unemployment_rate ),str_locate(pattern ='\\(',unemployment$unemployment_rate))))
+unemployment$unemployment_rate <- as.numeric(trim(sub("\\(", "", unemployment$unemployment_rate)))/100
+unemployment$country <- trim(unemployment$country)
+unemployment <- unemployment[complete.cases(unemployment),]
+
+#population density
+pop_density <- readHTMLTable(pop_density_url, which = 1, header = TRUE, stringsAsFactors = FALSE)
+pop_density <- pop_density[,c(2,7)]
+names(pop_density)<- c("country","population_per_sq_km")
+pop_density$population_per_sq_km <- as.numeric(trim(sub(",", "", pop_density$population_per_sq_km)))
+pop_density$country <- trim(substr(pop_density$country, 1, ifelse(is.na(str_locate(pattern ='\\(',pop_density$country)) ,length(pop_density$country),str_locate(pattern ='\\(',pop_density$country))))
+pop_density$country <- trim(sub("\\(", "", pop_density$country))
+
+#male female ratio
+male_female_ratio <- readHTMLTable(male_female_ratio_url, which = 3, header = TRUE, stringsAsFactors = FALSE)
+male_female_ratio <- male_female_ratio[,c(1,6)]
+names(male_female_ratio)<- c("country","male_female_ratio")
+male_female_ratio$male_female_ratio <- as.numeric(trim(male_female_ratio$male_female_ratio))
+male_female_ratio$country <- trim(male_female_ratio$country)
+
+#Happy Planet Index
+hpi <- readHTMLTable(hpi_url, which = 4, header = TRUE, stringsAsFactors = FALSE)
+hpi <- hpi[,c(2,3)]
+names(hpi)<- c("country","hpi")
+hpi$hpi <- as.numeric(trim(hpi$hpi))
+hpi$country <- trim(hpi$country)
+
+#english speaker percentage
+eng <- readHTMLTable(eng_url, which = 2, header = TRUE, stringsAsFactors = FALSE)
+eng <- eng[,c(1,2)]
+names(eng)<- c("country", "percent_english_speakers")
+eng$percent_english_speakers <- as.numeric(trim(eng$percent_english_speakers))/100
+eng <- eng[complete.cases(eng),]
+
+#polution levels
+co2 <- readHTMLTable(c02_url, which = 1, header = TRUE, stringsAsFactors = FALSE)
+co2 <- co2[,c(1,3)]
+names(co2)<- c("country", "co2_per_capita")
+co2$co2_per_capita <- as.numeric(trim(co2$co2_per_capita))
+co2$country <- trim(co2$country)
+
+#Join data sets together
+a <- merge(merge(merge(merge(merge(merge(merge(merge(merge(merge(merge(penetration,literacy_rates), gdp_rates),median_age),suicide),unemployment),pop_density),male_female_ratio),hpi),eng),co2),life_expectancy)
+a <- a[complete.cases(a),]
+complete_data_set <- a
+```
+
+Once I had each of the tables seperately imported and cleaned, I merged the data together on the country field performing an "Inner Join". Unfortunately since my data did not include all the information for each country, my data set was widdled down to the lowest common denominator for countries included in each data set. If each of the data sets was more complete I would have ended up with 200+ observations for my final analysis, but alas it was not, and I was left with roughly 60 obs. The reason I performed an inner join was because I did not want to perform some sort of bootstrapping method for filling in null values as those methods may be statiscally questionable and might affect the final analysis. Here is the final data set after merging them together.
+```{r, warning=FALSE, message=FALSE, fig.width=100, echo=FALSE}
+complete_data_set
+
+```
+### Data Exploration:
+Lets begin by taking a quick look at the summary statistics of the data.
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+summary(complete_data_set)
+```
+
+My original assumption was that literacy levels were highly correlated to internet penetration. In order to check if that is true we can calculate the Pearson Coefficient between those two variables.
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+paste("The Correlation Coefficient between Literacy rate and Internet Penetration is :", round(cor(a$literacy_rate, y = a$penetration_rate),2))
+```
+
+Now that we know that there is a strong correlation, it would be interesting to look at the cross correlations between all the variable. Below is a heatmap of the R-squared for each pair of variables. The lighter the color the more correlated the variables are. Notice that the diaganol is completely light blue as each variable's correlation with itself is 1.
+
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+#cross corrlations
+corr_a <- data.frame(round(cor(a[,c(2:13)]),2))
+qplot(x=X1, y=X2, data=melt(cor(a[,c(2:13)])), fill=value^2, geom="tile") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+### Predictive Model Building
+In order to build a predictive model, I will devide my dataset into a training set and a test set. I will use 70% of the observations to train on and the other 30% to validate the model. R-squared is a good indication, but physically plotting the actual versus the expected is something I always find to be great way to visualize the results.
+
+Once I seperate out the test set from the training set I will run a simple linear regression as a naive model just to see how well each of the variables are at helping to predict the penetration rate in each country. As you can see from the regression result, some of the variables below are not significant. 
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+a <- data.frame(a, rand=runif(length(a[,1])))
+ 
+training_set <- a[which(a$rand < .7),]
+test_set <- a[which(a$rand > .7),]
+
+regression <- lm(penetration_rate ~ literacy_rate +  gdp_per_capita + median_age + suicide_rate + unemployment_rate 
+    + population_per_sq_km + male_female_ratio + hpi + percent_english_speakers + co2_per_capita + life_expectancy
+    , training_set)
+
+summary(regression)
+```
+
+Becuase of this, I will now run a stepwise regression (bi-directional) in order to remove some of the variables which dont provide enough predictive power to the model. Here are the final results of the stepwise model.
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+step_wise <-step(regression, direction = "both")
+
+summary(step_wise)
+```
+
+Using the final model, I will now apply the model estimates to the test set in order to see how accurate I predicted Internet Penetration. Here I have plotted the actual internet penetration rates versus the predicted rates by the model. As you can see, the model predicts internet pentration extremely well and most observations fall within the confidence interval.
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# calculate correlation and mse of actual vs. predicted in test set
+cor = round(cor(results$actual, results$predicted),3)
+mse = round(mse(results$actual, results$predicted),3)
+
+#plot predicted vs. actual from test set
+ggplot(results, aes(x=actual, y=predicted)) +
+  geom_point(shape=1) +    
+  geom_smooth(method=lm) +
+  geom_text(aes(label=country), size=3)+
+  geom_text(aes(0.5,0.1,label = paste("Corr. coeff. between actual and predicted is", cor)), size=3, colour = "blue" ) +
+  geom_text(aes(0.5,0,label = paste("MSE between actual and predicted is", mse)), size=3 , colour = "blue") 
+```
+
+
+### Conclusion
+
+We now see that we can use predictive features to understand internet penetration rates in various countries. Now it is still unsure as to whether the features are a cause to internet penetration or vice versa, but indeed a relationship exists. And understanding the relationship is the first step to making the world more open and connected.
+
